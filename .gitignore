@@ -102,3 +102,11 @@ dist
 
 # TernJS port file
 .tern-port
+
+codes.env
+
+.DS_Store
+
+__pycache__
+
+code.py
