@@ -4,26 +4,29 @@ from discord import channel, embeds
 from discord.client import Client
 from discord.colour import Color
 from discord.embeds import Embed
+from discord.message import Message
 import requests
 import random
 import json
 import code
+from discord.ext import commands
+from discord.utils import get
+from discord import FFmpegPCMAudio
+from discord import TextChannel
+from discord.ext.commands import Bot
 
-
-apikey="9PDNQDC26YE1"
+client_cmd = Bot(command_prefix="!")
 
 #laster token med env
 from dotenv import load_dotenv
 load_dotenv()
 token = os.getenv('TOKEN')
-
+apikey = os.getenv('apikey')
 #intent=permissions  clinet=init
 import discord
 intents = discord.Intents.default()
 client = discord.Client(intents=intents)
 
-general = client.get_channel(887664166008139840)
-bot_info = client.get_channel(887717651156176927)
 
 teal = Color.teal()
 green = Color.green()
@@ -42,12 +45,17 @@ def get_gif(searchTerm):
 
          
     return data['results'][random_tall]['media'][0]['gif']['url']
-
+#general = client.get_channel(887664166008139840)
+#bot_info = client.get_channel(887717651156176927)
 @client.event
 async def on_ready():
-    print('online')
-    #await bot_info.send("I rise")
+    general = client.get_channel(887664166008139840)
+    bot_info = client.get_channel(887717651156176927)
 
+    print('online')
+    await bot_info.send("I rise")
+general = client.get_channel(887664166008139840)
+bot_info = client.get_channel(887717651156176927)
 """
 @Client.event
 async def on_disconnect():
@@ -71,15 +79,15 @@ async def on_message(message):
     searchword= message.content.split(" ")
     if message.author ==client.user: return
 
-    if message.content == "pong":
+    if message.content.lower() == "pong":
         await message.channel.send("ping")
-    if message.content == "ping":
+    if message.content.lower()  == "ping":
         latency = round(client.latency *1000)
         eembed=discord.Embed(Color=green)
         eembed.add_field(name="pong", value=f"Latency: {latency} ms")
         await message.channel.send(embed=eembed)
 
-    if message.content.startswith("!8ball"):
+    if message.content.lower().startswith("!8ball"):
         num = random.randint(0,len(responses) - 1)
         await message.channel.send(responses[num])
 
@@ -90,15 +98,45 @@ async def on_message(message):
         embed.set_image(url=gif_url)
         await message.channel.send(embed=embed)
     
-    if message.content =="!help":
+    if message.content.lower()  =="!help":
         botEmbed = discord.Embed(tiltle="Help", description="The server commands:", color=teal)
         botEmbed.add_field(name="ping", value="latency + pong", inline=False)
         botEmbed.add_field(name="pong", value="ping", inline=False)
         botEmbed.add_field(name="!8ball [your question]", value="magic 8 ball", inline=False)
+        botEmbed.add_field(name="!gif [searchword]", value="view the gifs", inline=False)
+        botEmbed.add_field(name="!quit", value="end me, can only use if you cool", inline=False)
+        botEmbed.add_field(name="!clear", value="clear messages, can only us if you cool", inline=False)
+        botEmbed.set_image(url="https://c.tenor.com/TbWCqYlRSZQAAAAC/heart-knut.gif")
         botEmbed.set_footer(text="don't ball the jordan ball baskball")
         botEmbed.set_author(name="Help")
         await message.channel.send(embed=botEmbed)
+    
+    if message.content.lower().startswith("!clear"):
+        try: 
+            clear_number = int(message.content.lower()[len("!clear "):]) #Collects word after !gif
+        except:
+            await message.channel.send("dumb dumb")
+            return
+        if clear_number >= 100:
+            await message.channel.send("number tooo big")
+            return
+        if  message.channel.permissions_for(message.author).administrator: 
+            tom_liste=[]
+            async for msg in message.channel.history(limit=clear_number + 1):   
+                tom_liste.append(msg)
+            await message.channel.delete_messages(tom_liste)
+        else:
+            await message.channel.send("no")    
 
-
+    if message.content.lower().startswith("!quit"):
+        general = client.get_channel(887664166008139840)
+        bot_info = client.get_channel(887717651156176927)
+        if message.channel.permissions_for(message.author).administrator: 
+            print('offline')
+            await bot_info.send("un oh, I fall")
+            await client.logout()
+        else:
+            await message.channel.send("nice try")
+            return
 #siste linje
 client.run(token)
